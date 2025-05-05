@@ -2,6 +2,7 @@ const express = require('express');
 const cors    = require('cors');
 const knex    = require('knex');
 
+// Configuración de la base de datos SQLite con Knex
 const db = knex({
   client: 'sqlite3',
   connection: { filename: './src/concerts.db' },
@@ -12,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Inicialización de la base de datos
+// Inicialización de tablas si no existen
 async function initDb() {
   if (!(await db.schema.hasTable('artists'))) {
     await db.schema.createTable('artists', t => {
@@ -43,10 +44,8 @@ initDb()
   .then(() => console.log('✅ Base de datos lista'))
   .catch(err => console.error('❌ Error al inicializar BD', err));
 
-
 // -------------------- CRUD ARTISTS --------------------
 
-// 1) Listar todos los artistas
 app.get('/artists', async (req, res) => {
   try {
     const list = await db('artists').select('*');
@@ -57,7 +56,6 @@ app.get('/artists', async (req, res) => {
   }
 });
 
-// 2) Obtener un artista por ID
 app.get('/artists/:id', async (req, res) => {
   try {
     const art = await db('artists').where({ id: req.params.id }).first();
@@ -69,7 +67,6 @@ app.get('/artists/:id', async (req, res) => {
   }
 });
 
-// 3) Crear un nuevo artista
 app.post('/artists', async (req, res) => {
   try {
     const [id] = await db('artists').insert({
@@ -84,7 +81,6 @@ app.post('/artists', async (req, res) => {
   }
 });
 
-// 4) Actualizar un artista por ID
 app.put('/artists/:id', async (req, res) => {
   try {
     const count = await db('artists')
@@ -102,7 +98,6 @@ app.put('/artists/:id', async (req, res) => {
   }
 });
 
-// 5) Eliminar un artista por ID
 app.delete('/artists/:id', async (req, res) => {
   try {
     const count = await db('artists').where({ id: req.params.id }).del();
@@ -114,10 +109,9 @@ app.delete('/artists/:id', async (req, res) => {
   }
 });
 
-
 // -------------------- CRUD EVENTS --------------------
 
-// Listar todos los eventos (con JOIN para incluir nombre de artista)
+// 1) Listar todos los eventos
 app.get('/events', async (req, res) => {
   try {
     const list = await db('events')
@@ -138,7 +132,7 @@ app.get('/events', async (req, res) => {
   }
 });
 
-// Obtener un evento por ID
+// 2) Obtener un evento por ID
 app.get('/events/:id', async (req, res) => {
   try {
     const ev = await db('events')
@@ -162,7 +156,7 @@ app.get('/events/:id', async (req, res) => {
   }
 });
 
-// Crear un evento
+// 3) Crear un evento
 app.post('/events', async (req, res) => {
   try {
     const [id] = await db('events').insert({
@@ -179,7 +173,7 @@ app.post('/events', async (req, res) => {
   }
 });
 
-// Actualizar un evento por ID
+// 4) Actualizar un evento
 app.put('/events/:id', async (req, res) => {
   try {
     const count = await db('events')
@@ -199,7 +193,7 @@ app.put('/events/:id', async (req, res) => {
   }
 });
 
-// Eliminar un evento por ID
+// 5) Eliminar un evento
 app.delete('/events/:id', async (req, res) => {
   try {
     const count = await db('events').where({ id: req.params.id }).del();
@@ -211,8 +205,7 @@ app.delete('/events/:id', async (req, res) => {
   }
 });
 
-
-// Arrancar servidor en el puerto 8081
+// Arrancar servidor
 const PORT = 8081;
 app.listen(PORT, () => {
   console.log(`✔️  Backend escuchando en http://localhost:${PORT}`);
